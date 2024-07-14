@@ -9,7 +9,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useMemo, useState} from 'react';
+import React, {useContext, useMemo, useState} from 'react';
 import {Formik} from 'formik';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {HomeStackParamList} from '@navigation/HomeStackNavigator';
@@ -19,6 +19,7 @@ import DatePicker from 'react-native-date-picker';
 import {productService} from '@services/product';
 import {FilledButtonComponent} from '@components/FilledButtonComponent';
 import {OutlinedButtonComponent} from '@components/OutlinedButtonComponent';
+import {ProductContext} from 'context/product';
 
 interface Props extends NativeStackScreenProps<HomeStackParamList, 'Form'> {}
 
@@ -62,6 +63,8 @@ export const FormScreen: React.FC<Props> = ({navigation, route}) => {
 
   const [isRevisionDatePickerOpen, setIsRevisionDatePickerOpen] =
     useState<boolean>(false);
+
+  const {fetchProducts} = useContext(ProductContext);
 
   const initialValues = useMemo(() => {
     const product = route.params?.product;
@@ -111,6 +114,7 @@ export const FormScreen: React.FC<Props> = ({navigation, route}) => {
               })
               .then(({data}) => {
                 Alert.alert('Éxito', 'Producto actualizado exitosamente');
+                fetchProducts();
                 navigation.pop();
                 navigation.replace('Details', {product: data});
               })
@@ -142,8 +146,8 @@ export const FormScreen: React.FC<Props> = ({navigation, route}) => {
                 })
                 .then(() => {
                   Alert.alert('Éxito', 'Producto registrado exitosamente');
+                  fetchProducts();
                   navigation.popToTop();
-                  navigation.replace('Home');
                 })
                 .catch(error => {
                   Alert.alert(

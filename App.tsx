@@ -12,6 +12,7 @@ import {HomeStackNavigator} from '@navigation/HomeStackNavigator';
 import {BottomSheetModalProvider} from '@gorhom/bottom-sheet';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {StyleSheet} from 'react-native';
+import {ProductProvider} from 'context/product';
 
 function App(): React.JSX.Element {
   return (
@@ -19,7 +20,9 @@ function App(): React.JSX.Element {
       <GestureHandlerRootView style={styles.rootView}>
         <NavigationContainer>
           <BottomSheetModalProvider>
-            <HomeStackNavigator />
+            <ProductProvider>
+              <HomeStackNavigator />
+            </ProductProvider>
           </BottomSheetModalProvider>
         </NavigationContainer>
       </GestureHandlerRootView>

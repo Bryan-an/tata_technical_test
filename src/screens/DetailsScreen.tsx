@@ -1,5 +1,5 @@
 import {Alert, Image, ScrollView, StyleSheet, Text, View} from 'react-native';
-import React, {useState} from 'react';
+import React, {useContext, useState} from 'react';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {HomeStackParamList} from '@navigation/HomeStackNavigator';
 import {productService} from '@services/product';
@@ -7,11 +7,13 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import {BottomSheetView, BottomSheetModal} from '@gorhom/bottom-sheet';
 import {FilledButtonComponent} from '@components/FilledButtonComponent';
 import {OutlinedButtonComponent} from '@components/OutlinedButtonComponent';
+import {ProductContext} from 'context/product';
 
 interface Props extends NativeStackScreenProps<HomeStackParamList, 'Details'> {}
 
 export const DetailsScreen: React.FC<Props> = ({route, navigation}) => {
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
+  const {fetchProducts} = useContext(ProductContext);
 
   const product = route.params.product;
 
@@ -36,8 +38,8 @@ export const DetailsScreen: React.FC<Props> = ({route, navigation}) => {
       .remove(product.id)
       .then(({data}) => {
         Alert.alert('Éxito', data ?? 'Producto eliminado correctamente');
+        fetchProducts();
         navigation.popToTop();
-        navigation.replace('Home');
       })
       .catch(error => {
         Alert.alert(
