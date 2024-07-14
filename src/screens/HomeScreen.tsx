@@ -1,12 +1,4 @@
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import {Alert, FlatList, StyleSheet, Text, TextInput, View} from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {HomeStackParamList} from '@navigation/HomeStackNavigator';
@@ -18,15 +10,65 @@ import {FilledButtonComponent} from '@components/FilledButtonComponent';
 
 interface Props extends NativeStackScreenProps<HomeStackParamList, 'Home'> {}
 
+const fakeProducts: ProductModel.Response.GetAll.Datum[] = [
+  {
+    id: 'trj-crd',
+    name: 'Visa Titanium',
+    description: 'Tarjeta de consumo bajo modalidad credito.',
+    logo: 'https://www.visa.com.ec/dam/VCOM/regional/lac/SPA/Default/Pay%20With%20Visa/Tarjetas/visa-signature-400x225.jpg',
+    date_release: '2024-07-14T05:00:00.000+00:00',
+    date_revision: '2025-07-15T05:00:00.000+00:00',
+  },
+  {
+    id: 'trj-crd2',
+    name: 'Tarjeta de Credito2',
+    description: 'Tarjeta de consumo bajo modalidad credito 2.',
+    logo: 'https://www.visa.com.ec/dam/VCOM/regional/lac/SPA/Default/Pay%20With%20Visa/Tarjetas/visa-signature-400x225.jpg',
+    date_release: '2023-02-01T00:00:00.000+00:00',
+    date_revision: '2023-02-01T00:00:00.000+00:00',
+  },
+  {
+    id: 'trj-crd3',
+    name: 'Tarjeta de Credito3',
+    description: 'Tarjeta de consumo bajo modalidad credito.',
+    logo: 'https://www.visa.com.ec/dam/VCOM/regional/lac/SPA/Default/Pay%20With%20Visa/Tarjetas/visa-signature-400x225.jpg',
+    date_release: '2023-02-01T00:00:00.000+00:00',
+    date_revision: '2023-02-01T00:00:00.000+00:00',
+  },
+  {
+    id: 'trj-123',
+    name: 'Tarjeta de Credito 3',
+    description: 'Tarjeta de consumo bajo modalidad credito 3.',
+    logo: 'https://www.visa.com.ec/dam/VCOM/regional/lac/SPA/Default/Pay%20With%20Visa/Tarjetas/visa-signature-400x225.jpg',
+    date_release: '2024-07-04T00:00:00.000+00:00',
+    date_revision: '2025-07-04T00:00:00.000+00:00',
+  },
+  {
+    id: '225544',
+    name: 'PruebaPostman',
+    description: 'Tarjeta de consumo bajo modalidad credito.',
+    logo: 'https://www.visa.com.ec/dam/VCOM/regional/lac/SPA/Default/Pay%20With%20Visa/Tarjetas/visa-signature-400x225.jpg',
+    date_release: '2023-02-01T00:00:00.000+00:00',
+    date_revision: '2023-02-01T00:00:00.000+00:00',
+  },
+  {
+    id: '2255441',
+    name: 'PruebaPostman2',
+    description: 'Tarjeta de consumo bajo modalidad credito.',
+    logo: 'https://www.visa.com.ec/dam/VCOM/regional/lac/SPA/Default/Pay%20With%20Visa/Tarjetas/visa-signature-400x225.jpg',
+    date_release: '2023-02-01T00:00:00.000+00:00',
+    date_revision: '2023-02-01T00:00:00.000+00:00',
+  },
+];
+
 export const HomeScreen: React.FC<Props> = ({navigation}) => {
   const [searchText, setSearchText] = useState<string>('');
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const [timeoutToClear, setTimeoutToClear] = useState<NodeJS.Timeout>();
   const allProducts = useRef<ProductModel.Response.GetAll.Datum[]>([]);
 
-  const [products, setProducts] = useState<
-    ProductModel.Response.GetAll.Datum[]
-  >([]);
+  const [products, setProducts] =
+    useState<ProductModel.Response.GetAll.Datum[]>(fakeProducts);
 
   useEffect(() => {
     return () => {
@@ -101,16 +143,13 @@ export const HomeScreen: React.FC<Props> = ({navigation}) => {
         </Text>
       )}
 
-      {isLoading ? (
-        <View style={styles.spinnerContainer}>
-          <ActivityIndicator size="large" color="gold" />
-        </View>
-      ) : products ? (
+      {products ? (
         <FlatList
           contentContainerStyle={styles.listContentContainer}
           data={products}
           renderItem={({item}) => (
             <ProductCardComponent
+              isLoading={isLoading}
               product={item}
               onPress={() => navigation.push('Details', {product: item})}
             />

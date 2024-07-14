@@ -8,19 +8,41 @@ import {
 import React from 'react';
 import {type ProductModel} from '@models/product';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import Skeleton from 'react-native-reanimated-skeleton';
 
 interface Props {
   product: ProductModel.Response.GetAll.Datum;
   onPress: TouchableOpacityProps['onPress'];
+  isLoading?: boolean;
 }
 
-export const ProductCardComponent: React.FC<Props> = ({product, onPress}) => {
+export const ProductCardComponent: React.FC<Props> = ({
+  product,
+  onPress,
+  isLoading = false,
+}) => {
   return (
-    <TouchableOpacity onPress={onPress}>
+    <TouchableOpacity onPress={onPress} disabled={isLoading}>
       <View style={styles.mainContainer}>
         <View style={styles.dataContainer}>
-          <Text style={styles.nameText}>{product.name}</Text>
-          <Text>ID: {product.id}</Text>
+          {isLoading ? (
+            <Skeleton
+              isLoading={isLoading}
+              containerStyle={{flex: 1, height: 20}}>
+              <Text style={{width: 225, height: 20}}>{product.name}</Text>
+            </Skeleton>
+          ) : (
+            <Text style={styles.nameText}>{product.name}</Text>
+          )}
+          {isLoading ? (
+            <Skeleton
+              isLoading={isLoading}
+              containerStyle={{flex: 1, height: 20}}>
+              <Text style={{width: 100, height: 20}}>{product.name}</Text>
+            </Skeleton>
+          ) : (
+            <Text>ID: {product.id}</Text>
+          )}
         </View>
         <View style={styles.iconContainer}>
           <Icon
@@ -55,5 +77,10 @@ const styles = StyleSheet.create({
   },
   icon: {
     opacity: 0.4,
+  },
+  skeleton: {
+    flex: 1,
+    width: '100%',
+    height: 80,
   },
 });
