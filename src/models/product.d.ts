@@ -10,6 +10,7 @@ export namespace ProductModel {
     }
 
     export interface Update {
+      id: string;
       name: string;
       description: string;
       logo: string;
@@ -19,9 +20,7 @@ export namespace ProductModel {
   }
 
   export namespace Response {
-    export interface GetAll {
-      data: GetAll.Datum[];
-    }
+    export type GetAll = GetAll.Datum[];
 
     export namespace GetAll {
       export interface Datum {
@@ -34,19 +33,7 @@ export namespace ProductModel {
       }
     }
 
-    export interface GetOne {
-      id: string;
-      name: string;
-      description: string;
-      logo: string;
-      date_release: string;
-      date_revision: string;
-    }
-
-    export interface Create {
-      message: string;
-      data: Create.Datum;
-    }
+    export type Create = Create.Datum;
 
     export namespace Create {
       export interface Datum {
@@ -59,13 +46,11 @@ export namespace ProductModel {
       }
     }
 
-    export interface Update {
-      message: string;
-      data: Update.Datum;
-    }
+    export type Update = Update.Datum;
 
     export namespace Update {
       export interface Datum {
+        id: string;
         name: string;
         description: string;
         logo: string;

@@ -9,11 +9,12 @@ import {
 } from 'react-native';
 import React, {useEffect, useRef, useState} from 'react';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {HomeStackParamList} from '@/navigation/index';
-import {productService} from '@/services/index';
-import {ProductModel} from '@/types/product';
-import {FilledButtonComponent, ProductCardComponent} from '@/components/index';
+import {HomeStackParamList} from '@navigation/HomeStackNavigator';
+import {productService} from '@services/product';
+import {type ProductModel} from '@models/product';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import {ProductCardComponent} from '@components/ProductCardComponent';
+import {FilledButtonComponent} from '@components/FilledButtonComponent';
 
 interface Props extends NativeStackScreenProps<HomeStackParamList, 'Home'> {}
 
@@ -69,7 +70,7 @@ export const HomeScreen: React.FC<Props> = ({navigation}) => {
 
     productService
       .getAll()
-      .then(({data: {data}}) => {
+      .then(({data}) => {
         allProducts.current = data;
         setProducts(data);
       })
@@ -91,25 +92,27 @@ export const HomeScreen: React.FC<Props> = ({navigation}) => {
         placeholder="Buscar..."
       />
 
-      <Text style={styles.amountText}>
-        {products.length}{' '}
-        {products.length === 0 || products.length > 1
-          ? 'resultados'
-          : 'resultado'}
-      </Text>
+      {products && (
+        <Text style={styles.amountText}>
+          {products.length}{' '}
+          {products.length === 0 || products.length > 1
+            ? 'resultados'
+            : 'resultado'}
+        </Text>
+      )}
 
       {isLoading ? (
         <View style={styles.spinnerContainer}>
           <ActivityIndicator size="large" color="gold" />
         </View>
-      ) : (
+      ) : products ? (
         <FlatList
           contentContainerStyle={styles.listContentContainer}
           data={products}
           renderItem={({item}) => (
             <ProductCardComponent
               product={item}
-              onPress={() => navigation.push('Details', {id: item.id})}
+              onPress={() => navigation.push('Details', {product: item})}
             />
           )}
           style={styles.productList}
@@ -126,7 +129,7 @@ export const HomeScreen: React.FC<Props> = ({navigation}) => {
             </View>
           )}
         />
-      )}
+      ) : null}
 
       <View style={styles.buttonContainer}>
         <FilledButtonComponent

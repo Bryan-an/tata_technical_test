@@ -5,11 +5,12 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {HomeScreen} from '@screens/HomeScreen';
 import {DetailsScreen} from '@screens/DetailsScreen';
 import {FormScreen} from '@screens/FormScreen';
+import {ProductModel} from '@models/product';
 
 export type HomeStackParamList = {
   Home: undefined;
-  Details: {id: string};
-  Form?: {id: string};
+  Details: {product: ProductModel.Response.GetAll.Datum};
+  Form?: {product: ProductModel.Response.GetAll.Datum};
 };
 
 const HomeStack = createNativeStackNavigator<HomeStackParamList>();

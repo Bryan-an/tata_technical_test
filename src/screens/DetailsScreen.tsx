@@ -1,28 +1,19 @@
-import {
-  ActivityIndicator,
-  Alert,
-  Image,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import {Alert, Image, ScrollView, StyleSheet, Text, View} from 'react-native';
+import React, {useState} from 'react';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
 import {HomeStackParamList} from '@navigation/HomeStackNavigator';
-import {ProductModel} from '@types/product';
 import {productService} from '@services/product';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import {BottomSheetView, BottomSheetModal} from '@gorhom/bottom-sheet';
+import {FilledButtonComponent} from '@components/FilledButtonComponent';
+import {OutlinedButtonComponent} from '@components/OutlinedButtonComponent';
 
 interface Props extends NativeStackScreenProps<HomeStackParamList, 'Details'> {}
 
 export const DetailsScreen: React.FC<Props> = ({route, navigation}) => {
-  const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isDeleting, setIsDeleting] = useState<boolean>(false);
 
-  const [product, setProduct] = useState<ProductModel.Response.GetOne | null>(
-    null,
-  );
+  const product = route.params.product;
 
   const bottomSheetModalRef = React.useRef<BottomSheetModal>(null);
 
@@ -31,21 +22,6 @@ export const DetailsScreen: React.FC<Props> = ({route, navigation}) => {
   const handlePresentModalPress = () => {
     bottomSheetModalRef.current?.present();
   };
-
-  useEffect(() => {
-    setIsLoading(true);
-
-    productService
-      .getOne(route.params.id)
-      .then(({data}) => setProduct(data))
-      .catch(error => {
-        Alert.alert(
-          'Error',
-          error.message ?? 'Ocurrió un error al obtener el producto',
-        );
-      })
-      .finally(() => setIsLoading(false));
-  }, []);
 
   const handleDelete = () => {
     if (!product) {
@@ -59,11 +35,7 @@ export const DetailsScreen: React.FC<Props> = ({route, navigation}) => {
     productService
       .remove(product.id)
       .then(({data}) => {
-        Alert.alert(
-          'Éxito',
-          data.message ?? 'Producto eliminado correctamente',
-        );
-
+        Alert.alert('Éxito', data ?? 'Producto eliminado correctamente');
         navigation.popToTop();
         navigation.replace('Home');
       })
@@ -76,14 +48,10 @@ export const DetailsScreen: React.FC<Props> = ({route, navigation}) => {
       .finally(() => setIsDeleting(false));
   };
 
-  return isLoading ? (
-    <View style={styles.spinnerContainer}>
-      <ActivityIndicator size="large" color="gold" />
-    </View>
-  ) : (
+  return (
     product && (
       <View style={styles.screen}>
-        <View style={styles.dataContainer}>
+        <ScrollView style={styles.dataContainer}>
           <Image
             source={{uri: product.logo}}
             style={{width: 'auto', height: 200, resizeMode: 'contain'}}
@@ -106,11 +74,11 @@ export const DetailsScreen: React.FC<Props> = ({route, navigation}) => {
             <Text style={styles.keyText}>Fecha de revisión: </Text>
             {product.date_revision}
           </Text>
-        </View>
+        </ScrollView>
         <View style={styles.buttonsContainer}>
           <FilledButtonComponent
             text="Editar"
-            onPress={() => navigation.push('Form', {id: product.id})}>
+            onPress={() => navigation.push('Form', {product: product})}>
             <Icon name="edit" size={18} color="darkslategrey" />
           </FilledButtonComponent>
           <OutlinedButtonComponent
@@ -125,7 +93,8 @@ export const DetailsScreen: React.FC<Props> = ({route, navigation}) => {
         <BottomSheetModal
           ref={bottomSheetModalRef}
           index={0}
-          snapPoints={snapPoints}>
+          snapPoints={snapPoints}
+          style={styles.bottomSheetModal}>
           <BottomSheetView style={styles.sheetContentContainer}>
             <Text
               style={{
@@ -199,5 +168,17 @@ const styles = StyleSheet.create({
   sheetContentContainer: {
     flex: 1,
     padding: 22,
+  },
+  bottomSheetModal: {
+    backgroundColor: 'white',
+    borderRadius: 24,
+    shadowColor: '#000000',
+    shadowOffset: {
+      width: 0,
+      height: 8,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 24,
+    elevation: 10,
   },
 });

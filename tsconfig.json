@@ -10,7 +10,7 @@
       "@navigation/*": ["src/navigation/*"],
       "@utils/*": ["src/utils/*"],
       "@services/*": ["src/services/*"],
-      "@types/*": ["src/types/*"]
+      "@models/*": ["src/models/*"]
     }
   }
 }

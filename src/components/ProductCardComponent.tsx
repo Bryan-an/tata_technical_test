@@ -6,7 +6,7 @@ import {
   View,
 } from 'react-native';
 import React from 'react';
-import {ProductModel} from '@/types/product';
+import {type ProductModel} from '@models/product';
 import Icon from 'react-native-vector-icons/FontAwesome';
 
 interface Props {

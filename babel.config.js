@@ -12,10 +12,11 @@ module.exports = {
           '@config': './src/config',
           '@navigation': './src/navigation',
           '@services': './src/services',
-          '@types': './src/types',
+          '@models': './src/models',
           '@utils': './src/utils',
         },
       },
     ],
+    'react-native-reanimated/plugin',
   ],
 };

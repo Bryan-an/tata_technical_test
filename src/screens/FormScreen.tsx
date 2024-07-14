@@ -1,6 +1,7 @@
 import {
-  ActivityIndicator,
   Alert,
+  KeyboardAvoidingView,
+  Platform,
   ScrollView,
   StyleSheet,
   Text,
@@ -8,16 +9,16 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useMemo, useState} from 'react';
 import {Formik} from 'formik';
 import {NativeStackScreenProps} from '@react-navigation/native-stack';
-import {HomeStackParamList} from '../navigation';
-import {FilledButtonComponent, OutlinedButtonComponent} from '../components';
+import {HomeStackParamList} from '@navigation/HomeStackNavigator';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import * as Yup from 'yup';
 import DatePicker from 'react-native-date-picker';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
-import {productService} from '@/services/index';
+import {productService} from '@services/product';
+import {FilledButtonComponent} from '@components/FilledButtonComponent';
+import {OutlinedButtonComponent} from '@components/OutlinedButtonComponent';
 
 interface Props extends NativeStackScreenProps<HomeStackParamList, 'Form'> {}
 
@@ -33,12 +34,12 @@ const validationSchema = Yup.object().shape({
   description: Yup.string()
     .required('Este campo es obligatorio')
     .min(10, 'Mínimo 10 caracteres')
-    .max(500, 'Máximo 200 caracteres'),
+    .max(200, 'Máximo 200 caracteres'),
   logo: Yup.string().required('Este campo es obligatorio'),
   date_release: Yup.date()
     .required('Este campo es obligatorio')
     .min(
-      new Date(),
+      new Date(new Date().setHours(0, 0, 0, 0)),
       'La fecha de liberación debe ser mayor o igual a la fecha actual',
     ),
   date_revision: Yup.date()
@@ -62,69 +63,46 @@ export const FormScreen: React.FC<Props> = ({navigation, route}) => {
   const [isRevisionDatePickerOpen, setIsRevisionDatePickerOpen] =
     useState<boolean>(false);
 
-  const [isLoading, setIsLoading] = useState<boolean>(!!route.params?.id);
+  const initialValues = useMemo(() => {
+    const product = route.params?.product;
 
-  const [initialValues, setInitialValues] = useState<{
-    ID: string;
-    name: string;
-    description: string;
-    logo: string;
-    date_release: Date;
-    date_revision: Date;
-  }>({
-    ID: '',
-    name: '',
-    description: '',
-    logo: '',
-    date_release: new Date(),
-    date_revision: new Date(
-      new Date().setFullYear(new Date().getFullYear() + 1),
-    ),
-  });
-
-  const insets = useSafeAreaInsets();
-
-  useEffect(() => {
-    if (route.params?.id) {
-      productService
-        .getOne(route.params.id)
-        .then(({data}) => {
-          setInitialValues({
-            ID: data.id,
-            name: data.name,
-            description: data.description,
-            logo: data.logo,
-            date_release: new Date(data.date_release),
-            date_revision: new Date(data.date_revision),
-          });
-        })
-        .catch(error => {
-          Alert.alert(
-            'Error',
-            error.message ?? 'Ocurrió un error al obtener el producto',
-          );
-        })
-        .finally(() => setIsLoading(false));
+    if (product) {
+      return {
+        ID: product.id,
+        name: product.name,
+        description: product.description,
+        logo: product.logo,
+        date_release: new Date(product.date_release),
+        date_revision: new Date(product.date_revision),
+      };
+    } else {
+      return {
+        ID: '',
+        name: '',
+        description: '',
+        logo: '',
+        date_release: new Date(),
+        date_revision: new Date(
+          new Date().setFullYear(new Date().getFullYear() + 1),
+        ),
+      };
     }
-  }, []);
+  }, [route.params?.product]);
 
-  return isLoading ? (
-    <View style={styles.spinnerContainer}>
-      <ActivityIndicator size="large" color="gold" />
-    </View>
-  ) : (
-    <ScrollView
-      style={styles.screen}
-      contentContainerStyle={{paddingBottom: insets.bottom}}>
+  return (
+    <KeyboardAvoidingView
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      style={styles.screen}>
       <Text style={styles.title}>Formulario de Registro</Text>
 
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
         onSubmit={(values, actions) => {
-          if (route.params?.id) {
+          if (route.params?.product) {
             productService
-              .update(route.params.id, {
+              .update({
+                id: values.ID,
                 name: values.name,
                 description: values.description,
                 logo: values.logo,
@@ -132,13 +110,9 @@ export const FormScreen: React.FC<Props> = ({navigation, route}) => {
                 date_revision: values.date_revision.toISOString(),
               })
               .then(({data}) => {
-                Alert.alert(
-                  'Éxito',
-                  data.message ?? 'Producto actualizado exitosamente',
-                );
-
+                Alert.alert('Éxito', 'Producto actualizado exitosamente');
                 navigation.pop();
-                navigation.replace('Details', {id: route.params!.id});
+                navigation.replace('Details', {product: data});
               })
               .catch(error => {
                 Alert.alert(
@@ -151,31 +125,36 @@ export const FormScreen: React.FC<Props> = ({navigation, route}) => {
             return;
           }
 
-          productService
-            .create({
-              id: values.ID,
-              name: values.name,
-              description: values.description,
-              logo: values.logo,
-              date_release: values.date_release.toISOString(),
-              date_revision: values.date_revision.toISOString(),
-            })
-            .then(({data}) => {
-              Alert.alert(
-                'Éxito',
-                data.message ?? 'Producto registrado exitosamente',
-              );
-
-              navigation.popToTop();
-              navigation.replace('Home');
-            })
-            .catch(error => {
-              Alert.alert(
-                'Error',
-                error.message ?? 'Ocurrió un error al registrar el producto',
-              );
-            })
-            .finally(() => actions.setSubmitting(false));
+          productService.verifyId(values.ID).then(({data}) => {
+            if (data) {
+              Alert.alert('Error', 'El ID ingresado ya está en uso');
+              actions.setFieldError('ID', 'Este ID ya está en uso');
+              actions.setSubmitting(false);
+            } else {
+              productService
+                .create({
+                  id: values.ID,
+                  name: values.name,
+                  description: values.description,
+                  logo: values.logo,
+                  date_release: values.date_release.toISOString(),
+                  date_revision: values.date_revision.toISOString(),
+                })
+                .then(() => {
+                  Alert.alert('Éxito', 'Producto registrado exitosamente');
+                  navigation.popToTop();
+                  navigation.replace('Home');
+                })
+                .catch(error => {
+                  Alert.alert(
+                    'Error',
+                    error.message ??
+                      'Ocurrió un error al registrar el producto',
+                  );
+                })
+                .finally(() => actions.setSubmitting(false));
+            }
+          });
         }}>
         {({
           handleChange,
@@ -189,7 +168,7 @@ export const FormScreen: React.FC<Props> = ({navigation, route}) => {
           isSubmitting,
         }) => (
           <>
-            <View style={styles.formContainer}>
+            <ScrollView style={styles.formContainer}>
               <View style={styles.inputContainer}>
                 <Text style={styles.label}>ID</Text>
                 <TextInput
@@ -203,7 +182,7 @@ export const FormScreen: React.FC<Props> = ({navigation, route}) => {
                       : undefined,
                   ]}
                   placeholder="123ABC"
-                  editable={!route.params?.id}
+                  editable={!route.params?.product}
                 />
                 {errors.ID && touched.ID ? (
                   <Text style={styles.error}>{errors.ID}</Text>
@@ -278,12 +257,13 @@ export const FormScreen: React.FC<Props> = ({navigation, route}) => {
                       : undefined,
                   ]}>
                   {values.date_release ? (
-                    <Text>{values.date_release?.toDateString()}</Text>
+                    <Text>{values.date_release?.toLocaleDateString()}</Text>
                   ) : (
                     <Text style={styles.placeholder}>Seleccionar fecha</Text>
                   )}
                 </TouchableOpacity>
                 <DatePicker
+                  locale="es-EC"
                   modal
                   open={isReleaseDatePickerOpen}
                   mode="date"
@@ -309,7 +289,7 @@ export const FormScreen: React.FC<Props> = ({navigation, route}) => {
               </View>
 
               <View style={styles.inputContainer}>
-                <Text style={styles.label}>Fecha de Liberación</Text>
+                <Text style={styles.label}>Fecha de Revisión</Text>
                 <TouchableOpacity
                   onPress={() => setIsRevisionDatePickerOpen(true)}
                   style={[
@@ -319,12 +299,13 @@ export const FormScreen: React.FC<Props> = ({navigation, route}) => {
                       : undefined,
                   ]}>
                   {values.date_revision ? (
-                    <Text>{values.date_revision?.toDateString()}</Text>
+                    <Text>{values.date_revision?.toLocaleDateString()}</Text>
                   ) : (
                     <Text style={styles.placeholder}>Seleccionar fecha</Text>
                   )}
                 </TouchableOpacity>
                 <DatePicker
+                  locale="es-EC"
                   modal
                   open={isRevisionDatePickerOpen}
                   mode="date"
@@ -356,11 +337,11 @@ export const FormScreen: React.FC<Props> = ({navigation, route}) => {
                   </Text>
                 ) : null}
               </View>
-            </View>
+            </ScrollView>
 
             <View style={styles.buttonsContainer}>
               <FilledButtonComponent
-                text={route.params?.id ? 'Actualizar' : 'Registrar'}
+                text={route.params?.product ? 'Actualizar' : 'Registrar'}
                 onPress={() => handleSubmit()}
                 isLoading={isSubmitting}>
                 <Icon name="save" size={18} color="darkslategrey" />
@@ -375,7 +356,7 @@ export const FormScreen: React.FC<Props> = ({navigation, route}) => {
           </>
         )}
       </Formik>
-    </ScrollView>
+    </KeyboardAvoidingView>
   );
 };
 
