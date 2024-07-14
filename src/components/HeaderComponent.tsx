@@ -21,6 +21,7 @@ export const HeaderComponent = ({back, navigation}: Props) => {
     <View style={[styles.mainContainer, {paddingTop: insets.top}]}>
       {back && (
         <TouchableOpacity
+          testID="header-back-button"
           onPress={navigation.goBack}
           style={[styles.backButton, {top: insets.top}]}>
           <Icon name="arrow-left" size={24} color="darkslategrey" />

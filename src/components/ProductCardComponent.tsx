@@ -22,7 +22,10 @@ export const ProductCardComponent: React.FC<Props> = ({
   isLoading = false,
 }) => {
   return (
-    <TouchableOpacity onPress={onPress} disabled={isLoading}>
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={isLoading}
+      testID="product-card">
       <View style={styles.mainContainer}>
         <View style={styles.dataContainer}>
           {isLoading ? (

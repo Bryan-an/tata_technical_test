@@ -25,7 +25,11 @@ export const OutlinedButtonComponent: React.FC<Props> = ({
       style={styles.button}
       disabled={isLoading}>
       {isLoading ? (
-        <ActivityIndicator size="small" color="darkslategrey" />
+        <ActivityIndicator
+          size="small"
+          color="darkslategrey"
+          testID="outlined-button-loading-indicator"
+        />
       ) : (
         children
       )}

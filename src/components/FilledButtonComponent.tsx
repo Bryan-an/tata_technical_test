@@ -29,7 +29,11 @@ export const FilledButtonComponent: React.FC<Props> = ({
       onPress={onPress}
       style={[styles.button, {backgroundColor}]}>
       {isLoading ? (
-        <ActivityIndicator size="small" color={textColor} />
+        <ActivityIndicator
+          size="small"
+          color={textColor}
+          testID="filled-button-loading-indicator"
+        />
       ) : (
         children
       )}
